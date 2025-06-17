@@ -255,10 +255,13 @@ async function playSong(interaction, queue) {
             });
         } else {
             const stream = ytdl(song.url, {
-                filter: 'audioonly',
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
-            });
+    filter: 'audioonly',
+    quality: 'highestaudio',
+    highWaterMark: 1 << 25,
+    requestOptions: {
+        proxy: process.env.FIXIE_URL || process.env.PROXY_URL, // Sử dụng FIXIE_URL hoặc PROXY_URL
+    },
+});
             console.log('🔍 Stream obtained from @distube/ytdl-core:', song.url);
             resource = createAudioResource(stream, {
                 inputType: StreamType.WebmOpus,
