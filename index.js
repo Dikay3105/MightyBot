@@ -255,13 +255,13 @@ async function playSong(interaction, queue) {
             });
         } else {
             const stream = ytdl(song.url, {
-    filter: 'audioonly',
-    quality: 'highestaudio',
-    highWaterMark: 1 << 25,
-    requestOptions: {
-        proxy: process.env.FIXIE_URL || process.env.PROXY_URL, // Sử dụng FIXIE_URL hoặc PROXY_URL
-    },
-});
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25,
+                requestOptions: {
+                    proxy: process.env.FIXIE_URL || process.env.PROXY_URL, // Sử dụng FIXIE_URL hoặc PROXY_URL
+                },
+            });
             console.log('🔍 Stream obtained from @distube/ytdl-core:', song.url);
             resource = createAudioResource(stream, {
                 inputType: StreamType.WebmOpus,
@@ -781,3 +781,13 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🌐 HTTP server đang chạy tại cổng ${PORT}`);
 });
+
+setInterval(() => {
+    const https = require('https');
+
+    https.get('https://mightybot.onrender.com', (res) => {
+        console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
+    }).on('error', (e) => {
+        console.error('[Keep-Alive] Lỗi khi ping:', e.message);
+    });
+}, 1000 * 60 * 4); // Mỗi 4 phút
