@@ -1,0 +1,89 @@
+Dưới đây là mẫu CV theo phong cách Harvard (Harvard Style) - một định dạng phổ biến trong academia, tập trung vào độ ngắn gọn và tập trung vào thành tích học thuật. Bạn có thể điều chỉnh thông tin theo nhu cầu cá nhân.
+
+---
+
+**[Họ và tên]**  
+**[Địa chỉ]**  
+**[Số điện thoại]** | **[Email]** | **[Website (nếu có)]**  
+
+---
+
+### I. **GIÁO DỤC (Education)**  
+**Ph.D. in [Tên ngành]** – [Tên trường đại học]  
+Tháng [06] năm [2025] – Dự kiến nhận bằng  
+
+**Thesis Title**: "[Tiêu đề luận án]"  
+Tư vấn khoa học: [Tên giáo sư]  
+
+**B.Sc. in [Tên ngành]** – [Tên trường đại học]  
+Tháng [08] năm [2020] – Tháng [05] năm [2024]  
+Danh hiệu: [Nếu đạt danh hiệu, ví dụ: "Tốt nghiệp hạng ưu"]  
+
+---
+
+### II. **QUÁ TRÌNH NGHIÊN CỨU (Research Experience)**  
+**Nghiên cứu sinh, Phòng thí nghiệm [Tên phòng thí nghiệm]** – [Tên trường đại học]  
+Tháng [09] năm [2024] – Hiện tại  
+- Nghiên cứu về [chủ đề cụ thể], tập trung vào [phương pháp/phân tích].  
+- Đã công bố [x] bài báo khoa học trong danh mục [tên tạp chí uy tín].  
+- Nhận học bổng từ [tên tổ chức] năm [2024].  
+
+**Cử nhân thực tập, Viện [Tên viện]** – [Tên tổ chức]  
+Tháng [06] năm [2023] – Tháng [08] năm [2023]  
+- Hỗ trợ nghiên cứu về [chủ đề], phân tích dữ liệu và viết báo cáo.  
+- Tham gia hội thảo [tên hội thảo] với [tên chuyên gia].  
+
+---
+
+### III. **KINH NGHIỆM KIẾN THỨC (Teaching & Academic Roles)**  
+**Giảng viên trợ giảng (TA)**, Khoa [Tên khoa], Đại học [Tên trường]  
+Tháng [09] năm [2022] – Tháng [12] năm [2022]  
+- Hướng dẫn sinh viên trong class [Tên lớp học] (Sinh viên [số lượng]).  
+- Xây dựng tài liệu bài giảng và tổ chức nhóm thảo luận.  
+
+**Thực tập sinh hỗ trợ giảng dậy (IRA)**, Chuyên ngành [Tên ngành] – Đại học [Tên trường]  
+Tháng [08] năm [2023] – Tháng [12] năm [2023]  
+- Hỗ trợ giảng viên phụ trách class [Tên lớp học], tập trung vào [chủ đề cụ thể].  
+
+---
+
+### IV. **CÔNG BỐ HỌC THUẬT (Publications)**  
+1. *[Tác giả 1], Bạn*. "[Tiêu đề bài báo]*" – **Tên tạp chí SNIPPE**, [Năm] (tạp chí được đánh giá Q1).  
+2. *[Tác giả 2], Bạn*. "[Tiêu đề bài báo]" – **Tên hội nghị uy tín**, [Năm] (tiếp cận mở).  
+3. *[Tên cuống sách]* **– Tên nơi xuất bản**, [Năm] | Nhà xuất bản [Tên NXB].  
+
+(Ví dụ, mỗi bài báo được ghi nhận đầy đủ theo chuẩn có thể tìm thấy trong [tên cơ sở dữ liệu học thuật].)  
+
+---
+
+### V. **HỘI THẢO & HOẠT ĐỘNG CHUYÊN NGHIỆP (Presentations & Professional Activities)**  
+- "*[Tiêu đề bài trình bày]*" – Hội nghị [Tên hội nghị], [Địa điểm/Thời gian].  
+- Trọng tài cho bài đăng kèm google scholar #% | Tạp chí [Tên tạp chí], [Năm].  
+- Điều phối viên, Nhóm [Tên nhóm nghiên cứu], Công ty [Tên tổ chức], [Thời gian].  
+
+---
+
+### VI. **GIẢI THƯỞNG & VINH DANH (Awards & Honors)**  
+- Bằng khen "Student Researcher of the Year** – Viện [Tên viện], [Năm].  
+- Học bổng [Tên học bổng], [Tổ chức tài trợ], [Năm].  
+
+---
+
+### VII. **THAM GIA XÃ HỘI & DỊCH VỤ (Community & Service)**  
+- Ban quản lý [Tên ban], [Tên tổ chức phi lợi nhuận], [Thời gian].  
+- Tình nguyện viên, Sự kiện [Tên sự kiện học thuật], [Năm].  
+
+---
+
+### VIII. **TH,KIP LIÊN LẠC (References)**  
+Sẵn sàng cung cấp.  
+
+---
+
+**Lưu ý**:  
+1. Định dạng Harvard thường **ngắn gọn**, tránh lạm dụng các câu dài.  
+2. Thành tích nên được **liệt kê theo dạng danh sách ngắn** với mục tiêu nhấn mạnh ảnh hưởng.  
+3. Mục *References* có thể để trống nếu người lao động sẽ cung cấp sau khi thiết kế CV.  
+4. Nếu tập trung vào công việc nghiên cứu, hãy ưu tiên các mục *Education*, *Research Experience*, và *Publications*.  
+
+Bạn có thể định dạng CV bằng Word hay LaTeX đơn giản và điều chỉnh cỡ chữ phù hợp (thường 10-12pt). Nếu cần hỗ trợ phiên bản PDF, hãy nói với tôi!
