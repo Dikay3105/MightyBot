@@ -258,9 +258,6 @@ async function playSong(interaction, queue) {
                 filter: 'audioonly',
                 quality: 'highestaudio',
                 highWaterMark: 1 << 25,
-                requestOptions: {
-                    proxy: process.env.FIXIE_URL || process.env.PROXY_URL, // Sử dụng FIXIE_URL hoặc PROXY_URL
-                },
             });
             console.log('🔍 Stream obtained from @distube/ytdl-core:', song.url);
             resource = createAudioResource(stream, {
@@ -767,6 +764,7 @@ client.login(process.env.DISCORD_TOKEN).catch((error) => {
     console.error('❌ Lỗi đăng nhập bot:', error.message);
 });
 
+
 // Web server với HTTPS
 const express = require('express');
 const app = express();
@@ -782,6 +780,39 @@ app.listen(PORT, () => {
     console.log(`🌐 HTTP server đang chạy tại cổng ${PORT}`);
 });
 
+// setInterval(() => {
+//     const https = require('https');
+
+//     https.get('https://mightybot.onrender.com', (res) => {
+//         console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
+//     }).on('error', (e) => {
+//         console.error('[Keep-Alive] Lỗi khi ping:', e.message);
+//     });
+// }, 1000 * 60 * 4); // Mỗi 4 phút
+
+// const express = require('express');
+// const app = express();
+// const PORT = process.env.PORT || 3000;
+
+// // Đọc chứng chỉ SSL cho HTTPS
+// try {
+//     const privateKey = fs.readFileSync('key.pem', 'utf8');
+//     const certificate = fs.readFileSync('cert.pem', 'utf8');
+//     const credentials = { key: privateKey, cert: certificate };
+
+//     app.get('/', (req, res) => {
+//         res.send('Bot is running!');
+//     });
+
+//     const httpsServer = https.createServer(credentials, app);
+//     httpsServer.listen(PORT, () => {
+//         console.log(`🌐 HTTPS server đang chạy tại cổng ${PORT}`);
+//     });
+// } catch (error) {
+//     console.error('❌ Lỗi khởi tạo HTTPS server:', error.message);
+// }
+
+Thêm đoạn này vào cuối file sau khi server đã start
 setInterval(() => {
     const https = require('https');
 
