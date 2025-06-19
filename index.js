@@ -812,12 +812,13 @@ app.listen(PORT, () => {
 //     console.error('❌ Lỗi khởi tạo HTTPS server:', error.message);
 // }
 
-setInterval(() => {
-    const https = require('https');
+// // Thêm đoạn này vào cuối file sau khi server đã start
+// // setInterval(() => {
+// //     const https = require('https');
 
-    https.get('https://mightybot.onrender.com', (res) => {
-        console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
-    }).on('error', (e) => {
-        console.error('[Keep-Alive] Lỗi khi ping:', e.message);
-    });
-}, 1000 * 60 * 4); // Mỗi 4 phút
+// //     https.get('https://botchatdiscord.onrender.com', (res) => {
+// //         console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
+// //     }).on('error', (e) => {
+// //         console.error('[Keep-Alive] Lỗi khi ping:', e.message);
+// //     });
+// // }, 1000 * 60 * 4); // Mỗi 4 phút
