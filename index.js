@@ -232,8 +232,8 @@ function scheduleLeave(guildId, interaction) {
 
 // Hàm phát bài hát hoặc TTS
 // Hàm phát bài hát hoặc TTS
+// Hàm phát bài hát hoặc TTS
 async function playSong(interaction, queue) {
-    // Hủy timeout rời kênh nếu có bài mới
     if (queue.leaveTimeout) {
         console.log('🔄 Hủy timeout rời kênh vì có bài mới:', interaction.guild.id);
         clearTimeout(queue.leaveTimeout);
@@ -242,7 +242,7 @@ async function playSong(interaction, queue) {
 
     if (!queue.songs.length) {
         console.log('📭 Queue rỗng, lên lịch rời kênh:', interaction.guild.id);
-        queue.player.stop(); // Dừng player để tránh phát lại
+        queue.player.stop();
         scheduleLeave(interaction.guild.id, interaction);
         return;
     }
@@ -255,32 +255,56 @@ async function playSong(interaction, queue) {
                 inputType: StreamType.Raw,
             });
         } else {
-            // Kiểm tra xem yt-dlp có sẵn không
+            // Kiểm tra yt-dlp
             const { execSync } = require('child_process');
             try {
                 execSync('yt-dlp --version', { stdio: 'ignore' });
                 console.log('✅ yt-dlp được tìm thấy trên hệ thống');
             } catch (error) {
                 console.error('❌ yt-dlp không được cài đặt hoặc không tìm thấy trong PATH');
-                throw new Error('yt-dlp is not installed or not found in PATH');
+                await interaction.followUp('❌ Lỗi: yt-dlp không được cài đặt trên server.');
+                return;
+            }
+
+            // Kiểm tra FFmpeg
+            try {
+                execSync('ffmpeg -version', { stdio: 'ignore' });
+                console.log('✅ FFmpeg được tìm thấy trên hệ thống');
+            } catch (error) {
+                console.error('❌ FFmpeg không được cài đặt hoặc không tìm thấy trong PATH');
+                await interaction.followUp('❌ Lỗi: FFmpeg không được cài đặt trên server.');
+                return;
             }
 
             // Sử dụng spawn để stream từ yt-dlp
             const { spawn } = require('child_process');
-            const ytdlpCommand = `yt-dlp -o - "${song.url}" -f bestaudio --no-playlist`;
-            const ytdlpProcess = spawn('yt-dlp', ['-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'], {
+            const ytdlpCommand = ['-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'];
+            console.log('🔍 Chạy lệnh yt-dlp:', `yt-dlp ${ytdlpCommand.join(' ')}`);
+            const ytdlpProcess = spawn('yt-dlp', ytdlpCommand, {
                 stdio: ['ignore', 'pipe', 'pipe'],
             });
 
-            console.log('🔍 Stream obtained from yt-dlp:', song.url);
-            resource = createAudioResource(ytdlpProcess.stdout, {
-                inputType: StreamType.WebmOpus,
+            // Ghi log lỗi từ stderr
+            let errorOutput = '';
+            ytdlpProcess.stderr.on('data', (data) => {
+                errorOutput += data.toString();
             });
 
-            // Xử lý lỗi từ yt-dlp
             ytdlpProcess.on('error', (error) => {
                 console.error('❌ Lỗi khi chạy yt-dlp:', error.message);
-                throw error;
+                console.error('❌ stderr:', errorOutput);
+                throw new Error(`yt-dlp error: ${error.message}\n${errorOutput}`);
+            });
+
+            ytdlpProcess.on('close', (code) => {
+                if (code !== 0) {
+                    console.error(`❌ yt-dlp exited với code ${code}:`, errorOutput);
+                    throw new Error(`yt-dlp exited with code ${code}: ${errorOutput}`);
+                }
+            });
+
+            resource = createAudioResource(ytdlpProcess.stdout, {
+                inputType: StreamType.WebmOpus,
             });
         }
 
@@ -290,6 +314,7 @@ async function playSong(interaction, queue) {
         await interaction.followUp(`🎶 Đang phát: **${song.title}** (Nguồn: ${song.source})`);
     } catch (error) {
         console.error('❌ Lỗi khi phát:', error.message);
+        await interaction.followUp(`❌ Lỗi khi phát bài hát: ${error.message}`);
         if (song.source === 'tts' && song.url) {
             try { fs.unlinkSync(song.url); } catch (e) { }
             console.log('🗑 Đã xóa file TTS do lỗi:', song.url);
