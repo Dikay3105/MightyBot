@@ -247,6 +247,7 @@ async function playSong(interaction, queue) {
 
     const song = queue.songs[0];
     let resource;
+    let ytdlpProcess = null;
     try {
         if (song.source === 'tts') {
             resource = createAudioResource(song.url, {
@@ -293,7 +294,7 @@ async function playSong(interaction, queue) {
             // Sử dụng spawn để stream từ yt-dlp với cookies
             const ytdlpCommand = ['--cookies', cookiesFilePath, '-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'];
             console.log('🔍 Chạy lệnh yt-dlp:', `yt-dlp ${ytdlpCommand.join(' ')}`);
-            const ytdlpProcess = spawn('yt-dlp', ytdlpCommand, {
+            ytdlpProcess = spawn('yt-dlp', ytdlpCommand, {
                 stdio: ['ignore', 'pipe', 'pipe'],
             });
 
@@ -311,6 +312,11 @@ async function playSong(interaction, queue) {
 
             ytdlpProcess.on('close', (code) => {
                 if (code !== 0) {
+                    // Bỏ qua lỗi Broken pipe khi skip
+                    if (errorOutput.includes('[Errno 32] Broken pipe')) {
+                        console.log('⚠️ Bỏ qua lỗi Broken pipe từ yt-dlp do skip bài');
+                        return;
+                    }
                     console.error(`❌ yt-dlp exited với code ${code}:`, errorOutput);
                     throw new Error(`yt-dlp exited with code ${code}: ${errorOutput}`);
                 }
@@ -319,6 +325,9 @@ async function playSong(interaction, queue) {
             resource = createAudioResource(ytdlpProcess.stdout, {
                 inputType: StreamType.WebmOpus,
             });
+
+            // Lưu process để dừng khi skip
+            queue.currentYtdlpProcess = ytdlpProcess;
         }
 
         queue.player.play(resource);
@@ -333,6 +342,12 @@ async function playSong(interaction, queue) {
             console.log('🗑 Đã xóa file TTS do lỗi:', song.url);
         }
         queue.songs.shift();
+        // Dừng ytdlpProcess nếu tồn tại
+        if (ytdlpProcess) {
+            ytdlpProcess.kill('SIGTERM');
+            console.log('🛑 Đã dừng yt-dlp process do lỗi');
+        }
+        delete queue.currentYtdlpProcess;
         playSong(interaction, queue);
     }
 }
@@ -421,6 +436,7 @@ client.on('interactionCreate', async (interaction) => {
                     player: createAudioPlayer(),
                     voiceChannelId: voiceChannel.id,
                     leaveTimeout: null,
+                    currentYtdlpProcess: null,
                 };
                 queues.set(guild.id, queue);
             }
@@ -446,6 +462,11 @@ client.on('interactionCreate', async (interaction) => {
                     console.log('🔴 Bot bị ngắt kết nối khỏi voice channel:', guild.id);
                     queue.songs = [];
                     queue.player.stop();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process do ngắt kết nối');
+                        delete queue.currentYtdlpProcess;
+                    }
                     if (queue.connection) {
                         queue.connection.destroy();
                         queue.connection = null;
@@ -461,6 +482,11 @@ client.on('interactionCreate', async (interaction) => {
                         console.log('🗑 Đã xóa file TTS:', currentSong.url);
                     }
                     queue.songs.shift();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process sau khi phát xong');
+                        delete queue.currentYtdlpProcess;
+                    }
                     playSong(interaction, queue);
                 });
 
@@ -473,6 +499,11 @@ client.on('interactionCreate', async (interaction) => {
                     }
                     interaction.followUp('❌ Có lỗi khi phát.');
                     queue.songs.shift();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process do lỗi AudioPlayer');
+                        delete queue.currentYtdlpProcess;
+                    }
                     playSong(interaction, queue);
                 });
             }
@@ -652,6 +683,7 @@ client.on('interactionCreate', async (interaction) => {
                     player: createAudioPlayer(),
                     voiceChannelId: voiceChannel.id,
                     leaveTimeout: null,
+                    currentYtdlpProcess: null,
                 };
                 queues.set(guild.id, queue);
             }
@@ -676,6 +708,11 @@ client.on('interactionCreate', async (interaction) => {
                     console.log('🔴 Bot bị ngắt kết nối khỏi voice channel:', guild.id);
                     queue.songs = [];
                     queue.player.stop();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process do ngắt kết nối');
+                        delete queue.currentYtdlpProcess;
+                    }
                     if (queue.connection) {
                         queue.connection.destroy();
                         queue.connection = null;
@@ -691,6 +728,11 @@ client.on('interactionCreate', async (interaction) => {
                         console.log('🗑 Đã xóa file TTS:', currentSong.url);
                     }
                     queue.songs.shift();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process sau khi phát xong');
+                        delete queue.currentYtdlpProcess;
+                    }
                     playSong(interaction, queue);
                 });
 
@@ -703,6 +745,11 @@ client.on('interactionCreate', async (interaction) => {
                     }
                     interaction.followUp('❌ Có lỗi khi phát.');
                     queue.songs.shift();
+                    if (queue.currentYtdlpProcess) {
+                        queue.currentYtdlpProcess.kill('SIGTERM');
+                        console.log('🛑 Đã dừng yt-dlp process do lỗi AudioPlayer');
+                        delete queue.currentYtdlpProcess;
+                    }
                     playSong(interaction, queue);
                 });
             }
@@ -732,6 +779,13 @@ client.on('interactionCreate', async (interaction) => {
         if (!queue || !queue.songs.length) {
             console.log('⚠️ Skip: Không có bài hát trong queue');
             return interaction.reply('❌ Không có bài hát nào trong hàng đợi.');
+        }
+
+        // Dừng yt-dlp process hiện tại nếu có
+        if (queue.currentYtdlpProcess) {
+            queue.currentYtdlpProcess.kill('SIGTERM');
+            console.log('🛑 Đã dừng yt-dlp process trước khi skip:', guild.id);
+            delete queue.currentYtdlpProcess;
         }
 
         queue.player.stop();
