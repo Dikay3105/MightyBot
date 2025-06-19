@@ -279,7 +279,7 @@ async function playSong(interaction, queue) {
             const cookiesFilePath = path.join(__dirname, 'youtube_cookies.txt');
             if (!fs.existsSync(cookiesFilePath)) {
                 console.error('❌ File cookies không tồn tại:', cookiesFilePath);
-                await interaction.followUp('❌ Lỗi: File cookies YouTube không tồn tại.');
+                await interaction.followUp('❌ Lỗi: File cookies YouTube không tồn tại. Vui lòng cập nhật file cookies.');
                 return;
             }
 
@@ -315,6 +315,24 @@ async function playSong(interaction, queue) {
                     // Bỏ qua lỗi Broken pipe khi skip
                     if (errorOutput.includes('[Errno 32] Broken pipe')) {
                         console.log('⚠️ Bỏ qua lỗi Broken pipe từ yt-dlp do skip bài');
+                        return;
+                    }
+                    // Bỏ qua lỗi khi process bị dừng (code null)
+                    if (code === null) {
+                        console.log('⚠️ Bỏ qua lỗi code null từ yt-dlp do process bị dừng');
+                        return;
+                    }
+                    // Xử lý lỗi cookies không hợp lệ
+                    if (errorOutput.includes('Sign in to confirm you’re not a bot') || errorOutput.includes('The provided YouTube account cookies are no longer valid')) {
+                        console.error('❌ Cookies YouTube không hợp lệ:', errorOutput);
+                        interaction.followUp('❌ Lỗi: Cookies YouTube không hợp lệ hoặc đã hết hạn. Vui lòng cập nhật file youtube_cookies.txt.');
+                        queue.songs.shift();
+                        if (ytdlpProcess) {
+                            ytdlpProcess.kill('SIGTERM');
+                            console.log('🛑 Đã dừng yt-dlp process do cookies không hợp lệ');
+                            delete queue.currentYtdlpProcess;
+                        }
+                        playSong(interaction, queue);
                         return;
                     }
                     console.error(`❌ yt-dlp exited với code ${code}:`, errorOutput);
