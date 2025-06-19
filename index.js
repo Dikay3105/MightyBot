@@ -20,7 +20,7 @@ const {
     VoiceConnectionStatus,
     StreamType,
 } = require('@discordjs/voice');
-const ytdl = require('@distube/ytdl-core');
+const { exec } = require('child_process');
 const SpotifyWebApi = require('spotify-web-api-node');
 const stringSimilarity = require('string-similarity');
 const gTTS = require('gtts');
@@ -231,6 +231,7 @@ function scheduleLeave(guildId, interaction) {
 }
 
 // Hàm phát bài hát hoặc TTS
+// Hàm phát bài hát hoặc TTS
 async function playSong(interaction, queue) {
     // Hủy timeout rời kênh nếu có bài mới
     if (queue.leaveTimeout) {
@@ -254,14 +255,32 @@ async function playSong(interaction, queue) {
                 inputType: StreamType.Raw,
             });
         } else {
-            const stream = ytdl(song.url, {
-                filter: 'audioonly',
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25,
+            // Kiểm tra xem yt-dlp có sẵn không
+            const { execSync } = require('child_process');
+            try {
+                execSync('yt-dlp --version', { stdio: 'ignore' });
+                console.log('✅ yt-dlp được tìm thấy trên hệ thống');
+            } catch (error) {
+                console.error('❌ yt-dlp không được cài đặt hoặc không tìm thấy trong PATH');
+                throw new Error('yt-dlp is not installed or not found in PATH');
+            }
+
+            // Sử dụng spawn để stream từ yt-dlp
+            const { spawn } = require('child_process');
+            const ytdlpCommand = `yt-dlp -o - "${song.url}" -f bestaudio --no-playlist`;
+            const ytdlpProcess = spawn('yt-dlp', ['-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'], {
+                stdio: ['ignore', 'pipe', 'pipe'],
             });
-            console.log('🔍 Stream obtained from @distube/ytdl-core:', song.url);
-            resource = createAudioResource(stream, {
+
+            console.log('🔍 Stream obtained from yt-dlp:', song.url);
+            resource = createAudioResource(ytdlpProcess.stdout, {
                 inputType: StreamType.WebmOpus,
+            });
+
+            // Xử lý lỗi từ yt-dlp
+            ytdlpProcess.on('error', (error) => {
+                console.error('❌ Lỗi khi chạy yt-dlp:', error.message);
+                throw error;
             });
         }
 
@@ -500,24 +519,15 @@ client.on('interactionCreate', async (interaction) => {
                     })(),
                     // YouTube search
                     (async () => {
-                        if (ytdl.validateURL(query)) {
-                            const videoDetails = await ytdl.getBasicInfo(query);
-                            return {
-                                source: 'youtube',
-                                title: videoDetails.videoDetails.title,
-                                url: videoDetails.videoDetails.video_url,
-                            };
-                        } else {
-                            const ytVideo = await findYouTubeVideo(query);
-                            if (!ytVideo) {
-                                throw new Error('No YouTube results');
-                            }
-                            return {
-                                source: 'youtube',
-                                title: ytVideo.title,
-                                url: ytVideo.url,
-                            };
+                        const ytVideo = await findYouTubeVideo(query);
+                        if (!ytVideo) {
+                            throw new Error('No YouTube results');
                         }
+                        return {
+                            source: 'youtube',
+                            title: ytVideo.title,
+                            url: ytVideo.url,
+                        };
                     })(),
                 ]);
 
@@ -764,8 +774,6 @@ client.login(process.env.DISCORD_TOKEN).catch((error) => {
     console.error('❌ Lỗi đăng nhập bot:', error.message);
 });
 
-
-// Web server với HTTPS
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -779,46 +787,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🌐 HTTP server đang chạy tại cổng ${PORT}`);
 });
-
-// setInterval(() => {
-//     const https = require('https');
-
-//     https.get('https://mightybot.onrender.com', (res) => {
-//         console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
-//     }).on('error', (e) => {
-//         console.error('[Keep-Alive] Lỗi khi ping:', e.message);
-//     });
-// }, 1000 * 60 * 4); // Mỗi 4 phút
-
-// const express = require('express');
-// const app = express();
-// const PORT = process.env.PORT || 3000;
-
-// // Đọc chứng chỉ SSL cho HTTPS
-// try {
-//     const privateKey = fs.readFileSync('key.pem', 'utf8');
-//     const certificate = fs.readFileSync('cert.pem', 'utf8');
-//     const credentials = { key: privateKey, cert: certificate };
-
-//     app.get('/', (req, res) => {
-//         res.send('Bot is running!');
-//     });
-
-//     const httpsServer = https.createServer(credentials, app);
-//     httpsServer.listen(PORT, () => {
-//         console.log(`🌐 HTTPS server đang chạy tại cổng ${PORT}`);
-//     });
-// } catch (error) {
-//     console.error('❌ Lỗi khởi tạo HTTPS server:', error.message);
-// }
-
-// // Thêm đoạn này vào cuối file sau khi server đã start
-// // setInterval(() => {
-// //     const https = require('https');
-
-// //     https.get('https://botchatdiscord.onrender.com', (res) => {
-// //         console.log(`[Keep-Alive] Ping thành công với status: ${res.statusCode}`);
-// //     }).on('error', (e) => {
-// //         console.error('[Keep-Alive] Lỗi khi ping:', e.message);
-// //     });
-// // }, 1000 * 60 * 4); // Mỗi 4 phút
