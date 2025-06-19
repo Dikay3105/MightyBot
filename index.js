@@ -231,8 +231,6 @@ function scheduleLeave(guildId, interaction) {
 }
 
 // Hàm phát bài hát hoặc TTS
-// Hàm phát bài hát hoặc TTS
-// Hàm phát bài hát hoặc TTS
 async function playSong(interaction, queue) {
     if (queue.leaveTimeout) {
         console.log('🔄 Hủy timeout rời kênh vì có bài mới:', interaction.guild.id);
@@ -249,6 +247,7 @@ async function playSong(interaction, queue) {
 
     const song = queue.songs[0];
     let resource;
+    let cookiesFilePath = null;
     try {
         if (song.source === 'tts') {
             resource = createAudioResource(song.url, {
@@ -256,7 +255,6 @@ async function playSong(interaction, queue) {
             });
         } else {
             // Kiểm tra yt-dlp
-            const { execSync } = require('child_process');
             try {
                 execSync('yt-dlp --version', { stdio: 'ignore' });
                 console.log('✅ yt-dlp được tìm thấy trên hệ thống');
@@ -276,9 +274,21 @@ async function playSong(interaction, queue) {
                 return;
             }
 
-            // Sử dụng spawn để stream từ yt-dlp
-            const { spawn } = require('child_process');
-            const ytdlpCommand = ['-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'];
+            // Kiểm tra cookies từ env
+            const youtubeCookies = process.env.YOUTUBE_COOKIES;
+            if (!youtubeCookies) {
+                console.error('❌ Thiếu biến môi trường YOUTUBE_COOKIES');
+                await interaction.followUp('❌ Lỗi: Thiếu cookies YouTube trong cấu hình server.');
+                return;
+            }
+
+            // Tạo file cookies tạm thời
+            cookiesFilePath = path.join(__dirname, `youtube_cookies_${Date.now()}.txt`);
+            fs.writeFileSync(cookiesFilePath, youtubeCookies);
+            console.log('✅ Đã tạo file cookies tạm thời:', cookiesFilePath);
+
+            // Sử dụng spawn để stream từ yt-dlp với cookies
+            const ytdlpCommand = ['--cookies', cookiesFilePath, '-o', '-', song.url, '-f', 'bestaudio', '--no-playlist'];
             console.log('🔍 Chạy lệnh yt-dlp:', `yt-dlp ${ytdlpCommand.join(' ')}`);
             const ytdlpProcess = spawn('yt-dlp', ytdlpCommand, {
                 stdio: ['ignore', 'pipe', 'pipe'],
@@ -321,6 +331,16 @@ async function playSong(interaction, queue) {
         }
         queue.songs.shift();
         playSong(interaction, queue);
+    } finally {
+        // Xóa file cookies tạm thời nếu tồn tại
+        if (cookiesFilePath && fs.existsSync(cookiesFilePath)) {
+            try {
+                fs.unlinkSync(cookiesFilePath);
+                console.log('🗑 Đã xóa file cookies tạm thời:', cookiesFilePath);
+            } catch (e) {
+                console.error('❌ Lỗi khi xóa file cookies:', e.message);
+            }
+        }
     }
 }
 
